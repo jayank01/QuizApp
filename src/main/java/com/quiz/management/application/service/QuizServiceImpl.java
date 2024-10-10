@@ -1,5 +1,6 @@
 package com.quiz.management.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quiz.management.application.dto.QuestionDTO;
 import com.quiz.management.application.dto.QuizDTO;
@@ -7,6 +8,7 @@ import com.quiz.management.application.entity.QuizEntity;
 import com.quiz.management.application.handler.QuizException;
 import com.quiz.management.application.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ public class QuizServiceImpl implements QuizService {
 
     private final QuizRepository quizRepository;
     private final ObjectMapper objectMapper;
+    private final RedisService redisService;
 
     @Override
     public QuizDTO createQuiz(QuizDTO quizDTO) throws QuizException {
@@ -32,8 +35,12 @@ public class QuizServiceImpl implements QuizService {
     }
 
     @Override
-    public QuizDTO getQuizById(Integer Id) throws QuizException {
-        return objectMapper.convertValue(quizRepository.findById(Id).orElseThrow(() -> new QuizException("Quiz not found with id: " + Id)), QuizDTO.class);
+    public QuizDTO getQuizById(Integer Id) throws QuizException, JsonProcessingException {
+        QuizEntity quizEntity = redisService.get("Quiz_No." + Id, QuizEntity.class);
+        if(quizEntity != null) return objectMapper.convertValue(quizEntity,QuizDTO.class);
+        QuizEntity quiz = quizRepository.findById(Id).orElseThrow(() -> new QuizException("Quiz not found with id: " + Id));
+        redisService.set("Quiz_No." + Id,quiz,300L);
+        return objectMapper.convertValue(quiz, QuizDTO.class);
     }
 
     @Override

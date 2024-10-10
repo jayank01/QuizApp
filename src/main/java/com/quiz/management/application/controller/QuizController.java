@@ -1,5 +1,6 @@
 package com.quiz.management.application.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.quiz.management.application.dto.QuizDTO;
 import com.quiz.management.application.handler.QuizException;
 import com.quiz.management.application.service.QuizService;
@@ -28,7 +29,7 @@ public class QuizController  {
     }
 
     @GetMapping("/{quizId}")
-    public ResponseEntity<QuizDTO> getQuizById(@PathVariable Integer quizId) throws QuizException {
+    public ResponseEntity<QuizDTO> getQuizById(@PathVariable Integer quizId) throws QuizException, JsonProcessingException {
         return new ResponseEntity<>(quizService.getQuizById(quizId),HttpStatus.OK);
     }
 

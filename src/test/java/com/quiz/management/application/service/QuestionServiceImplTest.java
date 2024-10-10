@@ -1,5 +1,6 @@
 package com.quiz.management.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quiz.management.application.dto.QuestionDTO;
 import com.quiz.management.application.entity.QuestionEntity;
@@ -92,7 +93,7 @@ class QuestionServiceImplTest {
     }
 
     @Test
-    void test_getQuestionById() throws QuestionException {
+    void test_getQuestionById() throws QuestionException, JsonProcessingException {
         when(questionRepository.findById(anyInt())).thenReturn(Optional.of(questionEntity));
         when(objectMapper.convertValue(questionEntity, QuestionDTO.class)).thenReturn(questionDTO);
 

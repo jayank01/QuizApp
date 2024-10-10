@@ -1,7 +1,9 @@
 package com.quiz.management.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.quiz.management.application.dto.QuestionDTO;
+import com.quiz.management.application.dto.QuizDTO;
 import com.quiz.management.application.entity.QuestionEntity;
 import com.quiz.management.application.entity.QuizEntity;
 import com.quiz.management.application.handler.QuestionException;
@@ -22,6 +24,7 @@ public class QuestionServiceImpl implements QuestionService{
     private final QuizRepository quizRepository;
     private final QuestionRepository questionRepository;
     private final ObjectMapper objectMapper;
+    private final RedisService redisService;
 
     @Override
     public QuestionDTO addQuestion(QuestionDTO questionDTO) throws QuizException {
@@ -32,8 +35,12 @@ public class QuestionServiceImpl implements QuestionService{
     }
 
     @Override
-    public QuestionDTO getQuestionById(Integer Id) throws QuestionException {
-        return objectMapper.convertValue(questionRepository.findById(Id).orElseThrow(() -> new QuestionException("Quiz not found with Id: " + Id)),QuestionDTO.class);
+    public QuestionDTO getQuestionById(Integer Id) throws QuestionException, JsonProcessingException {
+        QuestionEntity questionEntity = redisService.get("Question_No." + Id, QuestionEntity.class);
+        if(questionEntity != null) return objectMapper.convertValue(questionEntity,QuestionDTO.class);
+        QuestionEntity question = questionRepository.findById(Id).orElseThrow(() -> new QuestionException("Quiz not found with Id: " + Id));
+        redisService.set("Question_No." + Id,question,300L);
+        return objectMapper.convertValue(question,QuestionDTO.class);
     }
 
     @Override
