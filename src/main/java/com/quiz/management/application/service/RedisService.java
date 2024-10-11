@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -15,10 +16,10 @@ public class RedisService {
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String,Object> redisTemplate;
 
-    public <T> T get(String key, Class<T> entity) throws JsonProcessingException {
+    public <T> Optional<T> get(String key, Class<T> entity) throws JsonProcessingException {
         var object = redisTemplate.opsForValue().get(key);
-        if(object == null) return null;
-        return objectMapper.convertValue(object,entity);
+        if(object == null) return Optional.empty();
+        return Optional.ofNullable(objectMapper.convertValue(object,entity));
     }
 
     public void set(String key, Object object, Long ttl) throws JsonProcessingException {

@@ -36,8 +36,8 @@ public class QuestionServiceImpl implements QuestionService{
 
     @Override
     public QuestionDTO getQuestionById(Integer Id) throws QuestionException, JsonProcessingException {
-        QuestionEntity questionEntity = redisService.get("Question_No." + Id, QuestionEntity.class);
-        if(questionEntity != null) return objectMapper.convertValue(questionEntity,QuestionDTO.class);
+        Optional<QuestionEntity> questionEntity = redisService.get("Question_No." + Id, QuestionEntity.class);
+        if(questionEntity.isPresent()) return objectMapper.convertValue(questionEntity.get(),QuestionDTO.class);
         QuestionEntity question = questionRepository.findById(Id).orElseThrow(() -> new QuestionException("Quiz not found with Id: " + Id));
         redisService.set("Question_No." + Id,question,300L);
         return objectMapper.convertValue(question,QuestionDTO.class);
